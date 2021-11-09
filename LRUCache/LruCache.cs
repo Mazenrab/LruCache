@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace LruCache
 {
@@ -61,15 +62,19 @@ namespace LruCache
                 _cacheList.AddFirst(key);
             }
         }
-        
+ 
         /// <summary>
         /// Gets the value associated with the specified key.
         /// </summary>
         /// <param name="key">The key of the value to get.</param>
         /// <returns>Value associated with the specified key.</returns>
+        /// <exception cref="ArgumentNullException">Key is null.</exception>
         /// <exception cref="KeyNotFoundException">Key does not exist in cache.</exception>
         public TValue Get(TKey key)
         {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+            
             if(!_dictionary.TryGetValue(key, out TValue value))
                 throw new KeyNotFoundException($"key: {key}");
 
@@ -85,8 +90,12 @@ namespace LruCache
         /// <param name="key">The key of the value to get.</param>
         /// <param name="value">When this method returns, contains the value associated with the specified key, if the key is found; otherwise, the default value for the type of the value parameter.</param>
         /// <returns>True if contains an element with the specified key; otherwise, false.</returns>
+        /// <exception cref="ArgumentNullException">Key is null.</exception>
         public bool TryGet(TKey key, out TValue value)
         {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
             if(!_dictionary.TryGetValue(key, out value))
                 return false;
 
@@ -103,6 +112,18 @@ namespace LruCache
         {
             _dictionary.Clear();
             _cacheList.Clear();
+        }
+
+        /// <summary>
+        /// Get or set the value associated with specified key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <exception cref="ArgumentNullException">Key is null.</exception>
+        /// <exception cref="KeyNotFoundException">Key does not exist in cache.</exception>
+        public TValue this[TKey key]
+        {
+            get => Get(key);
+            set => Put(key, value);
         }
     }
 }
