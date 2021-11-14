@@ -30,7 +30,9 @@ namespace LruCache
         /// <param name="capacity">Maximum number of elements to cache.</param>
         public LruCache(int capacity)
         {
-            
+            if (capacity <= 0)
+                throw new ArgumentOutOfRangeException(nameof(capacity), "Value must be a positive number.");
+
             _capacity = capacity;
             _dictionary = new Dictionary<TKey, TValue>();
             _cacheList = new LinkedList<TKey>();
