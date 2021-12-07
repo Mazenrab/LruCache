@@ -108,6 +108,26 @@ namespace LruCache
         }
 
         /// <summary>
+        /// Remove the value associated with the specified key from cache.
+        /// </summary>
+        /// <param name="key">The key of the element to remove.</param>
+        /// <returns>True if an element with the specified key was removed; otherwise, false.</returns>
+        /// <exception cref="ArgumentNullException">Key is null.</exception>
+        public bool Remove(TKey key)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            if (_dictionary.Remove(key))
+            {
+                _cacheList.Remove(key);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Remove all elements from cache.
         /// </summary>
         public void Clear()
