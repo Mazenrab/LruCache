@@ -6,17 +6,6 @@ using NUnit.Framework;
 using LRUCache;
 namespace LRUCache.Tests
 {
-    
-    /*
-        +    If you check for key in an empty lru, it returns null.
-        +    If you add a key, then check it right away, it is returned.
-        +   If you add a key, then check for a different key, it returns null.
-        -   If you add a key, then delete that key, then check for the key, it returns null.
-        +   If you add a key, then add enough other keys to the point your first key is removed, then check for that key, it returns null.
-        -   If you add something without a key, it throws.
-        -   If you delete a key from an empty lru, throw (or fail silently, if that’s what you prefer).
-        -   If you add a key without a value, it throws (unless you want that behavior to match a delete, in which case, check that it’s null).
-     */
     [TestFixture]
     public class LruCacheTest
     {
@@ -34,6 +23,22 @@ namespace LRUCache.Tests
             Assert.That(cache.Capacity, Is.EqualTo(size));
         }
 
+        [Test]
+        public void Put_NullValue_StoreNull()
+        {
+            var cache = GetCache<string, string>(10);
+
+            var cacheKey = "key";
+
+            cache.Put(cacheKey, null);
+
+            var val1 = cache.Get(cacheKey);
+            cache.TryGet(cacheKey, out var val2);
+            
+            Assert.That(val1, Is.Null);
+            Assert.That(val2, Is.Null);
+        }
+        
         [Test] 
         public void Get_NullKey_ThrowsArgumentNullException()
         {
@@ -141,6 +146,76 @@ namespace LRUCache.Tests
             
             Assert.That(result, Is.False);
             Assert.That(value, Is.EqualTo(default(string)));
+        }
+
+        [Test]
+        public void Remove_NullKey_ThrowsArgumentNullException()
+        {
+            var cache = GetCache<string, string>();
+            
+            Assert.That(()=> cache.Remove(null), Throws.Exception.TypeOf<ArgumentNullException>());
+        }
+        
+        [Test]
+        public void Remove_ContainingKey_ReturnTrue()
+        {
+            var cache = GetCache<string, int>();
+
+            var cacheKey = "key";
+            cache.Put(cacheKey, 1);
+
+            bool result = cache.Remove(cacheKey);
+            
+            Assert.That(result, Is.True);
+        }
+
+        [Test]
+        public void Remove_ContainingKey_KeyDeleted()
+        {
+            var cache = GetCache<string, int>();
+
+            var cacheKey = "key";
+            cache.Put(cacheKey, 1);
+            cache.Remove(cacheKey);
+
+            bool result = cache.TryGet(cacheKey, out _);
+            
+            Assert.That(result, Is.False);
+        }
+        
+        [Test]
+        public void Remove_MissingKey_ReturnFalse()
+        {
+            var cache = GetCache<string, int>();
+
+            var cacheKey = "key";
+            cache.Put(cacheKey, 1);
+
+            bool result = cache.Remove("cacheKey");
+            
+            Assert.That(result, Is.False);
+        }
+        
+        [Test]
+        public void Remove_MissingKey_DoesntAffectAnotherKeys()
+        {
+            var cache = GetCache<string, string>(10);
+
+            KickOutValues(cache);
+            bool result = cache.Remove("cacheKey");
+                
+            Assert.That(result, Is.False);
+            Assert.That(cache.Utilization, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Remove_EmptyCache_ReturnFalse([Random(1,1000,1)]int size)
+        {
+            var cache = GetCache<string, int>(size);
+            
+            bool result = cache.Remove("cacheKey");
+            
+            Assert.That(result, Is.False);
         }
         
         private LruCache<TKey, TValue> GetCache<TKey, TValue>(int size = 10)
