@@ -130,7 +130,7 @@ namespace LRUCache.Tests
         }
         
         [Test] 
-        public void TryGet_KeyPushedThenKickedOutByLruSize_ThrowsKeyNotFoundException()
+        public void TryGet_KeyPushedThenKickedOutByLruSize_ReturnFalse()
         {
             var cache = GetCache<string, string>();
             var cacheKey = "xxx";
